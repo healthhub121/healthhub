@@ -162,9 +162,9 @@ async function loadDoctors() {
         });
 
         doctors.forEach(doc => {
-            const photo = doc.profile_pic || 'https://via.placeholder.com/80?text=Dr';
+            const photo = doc.profile_pic || 'https://ui-avatars.com/api/?name=Dr&size=80&background=1a6b8a&color=fff';
             const html = `
-                <img src="${photo}" alt="${doc.name}" onerror="this.src='https://via.placeholder.com/80?text=Dr'">
+                <img src="${photo}" alt="${doc.name}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Dr&size=80'">
                 <h4>${doc.name}</h4>
                 <p><i class="fas fa-stethoscope" style="color:var(--primary)"></i> ${doc.specialty || '—'}</p>
                 <p><i class="fas fa-phone" style="color:var(--success)"></i> ${doc.phone || 'غير محدد'}</p>
@@ -227,9 +227,9 @@ async function loadPatients() {
 
         // أضف أو حدّث الكروت
         patients.forEach(p => {
-            const photo = p.profile_pic || 'https://via.placeholder.com/80?text=P';
+            const photo = p.profile_pic || 'https://ui-avatars.com/api/?name=P&size=80&background=2ecc71&color=fff';
             const html = `
-                <img src="${photo}" alt="${p.name}" style="border-color:var(--success)" onerror="this.src='https://via.placeholder.com/80?text=P'">
+                <img src="${photo}" alt="${p.name}" style="border-color:var(--success)" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=P&size=80&background=2ecc71&color=fff'">
                 <h4>${p.name}</h4>
                 <p><i class="fas fa-phone" style="color:var(--success)"></i> ${p.phone || 'غير محدد'}</p>
                 <p><i class="fas fa-tint" style="color:var(--danger)"></i> ${p.blood_type || 'فصيلة غير محددة'} &nbsp;|&nbsp; ${p.age ? p.age + ' سنة' : 'عمر غير محدد'}</p>
