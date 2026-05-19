@@ -31,7 +31,7 @@ async function fetchBookingStatus() {
 async function fetchDoctors() {
     const container = document.getElementById('doctors-cards');
     // استخدام عنوان IP المحلي لضمان الوصول للسيرفر من المتصفح
-    const API_URL = 'http://127.0.0.1:3000/doctor/doctors';
+    const API_URL = 'https://healthhub-production-90ef.up.railway.app/doctor/doctors';
     
     try {
         const response = await fetch(API_URL);
@@ -80,7 +80,7 @@ async function fetchDoctors() {
 async function updateDoctorPhotoForPatients() {
     try {
         // جلب الأطباء المحدثة من السيرفر
-        const response = await fetch('http://127.0.0.1:3000/doctor/doctors');
+        const response = await fetch('https://healthhub-production-90ef.up.railway.app/doctor/doctors');
         if (!response.ok) return;
         
         const data = await response.json();
