@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الأدمن | HealthHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Admin-specific overrides ===== */
+        body { align-items: flex-start; background: url("background.jpeg") center center / cover fixed no-repeat !important; }
+
+        /* Login page centering */
+        #login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; width: 100%; }
+
+        /* Submit btn fix - no red */
+        #admin-submit-btn {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: #fff;
+            border: none;
+        }
+        #admin-submit-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        /* Dashboard layout */
+        #dashboard-page { width: 100%; max-width: 1000px; margin: 0 auto; padding: 20px; display: none; }
+
+        /* Stat cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-card .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-card .stat-num { font-size: 30px; font-weight: 800; color: var(--primary); }
+        .stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
+
+        /* Tabs */
+        .tabs-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .tab-btn-admin {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            background: var(--border);
+            color: var(--text-secondary);
+            transition: all 0.25s;
+            position: relative;
+        }
+        .tab-btn-admin:hover:not(.active) {
+            background: rgba(26,107,138,0.12);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .tab-btn-admin.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(26,107,138,0.35);
+            transform: translateY(-2px);
+        }
+        .tab-btn-admin.active::after {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Cards grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .item-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.25s;
+            text-align: center;
+        }
+        .item-card:hover { box-shadow: var(--shadow-md); }
+        .item-card img {
+            width: 76px; height: 76px;
+            border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--primary);
+            margin-bottom: 10px;
+        }
+        .item-card h4 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 6px 0; }
+        .item-card p { font-size: 12px; color: var(--text-secondary); margin: 3px 0; }
+        .item-card .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .item-card .card-actions button { flex: 1; padding: 8px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 12px; transition: all 0.2s; }
+        .btn-edit-card { background: var(--primary); color: #fff; }
+        .btn-edit-card:hover { background: var(--primary-dark); }
+        .btn-del-card { background: var(--danger); color: #fff; }
+        .btn-del-card:hover { background: #c0392b; }
+
+        /* Table */
+        .admin-tbl { width: 100%; border-collapse: collapse; background: var(--bg-glass); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .admin-tbl thead { background: var(--primary); color: #fff; }
+        .admin-tbl th { padding: 12px 14px; text-align: right; font-size: 13px; font-weight: 600; }
+        .admin-tbl td { padding: 11px 14px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-primary); }
+        .admin-tbl tbody tr:hover { background: rgba(26,107,138,0.04); }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+        .badge-done { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-cancel { background: #fee2e2; color: #991b1b; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow-lg);
+            animation: cardIn 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        .modal-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+        .modal-box .input-group { margin-bottom: 14px; text-align: right; }
+        .modal-box label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .modal-box input, .modal-box select, .modal-box textarea {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-family: 'Cairo', sans-serif; font-size: 14px;
+            color: var(--text-primary); background: var(--bg-page);
+            outline: none; transition: border 0.2s;
+        }
+        .modal-box input:focus, .modal-box select:focus { border-color: var(--primary-light); }
+        .modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+        .modal-footer button { padding: 10px 22px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 14px; transition: all 0.2s; }
+        .btn-save-modal { background: var(--success); color: #fff; }
+        .btn-save-modal:hover { background: #059669; }
+        .btn-cancel-modal { background: var(--border); color: var(--text-secondary); }
+        .btn-cancel-modal:hover { background: #bbb; color: #fff; }
+
+        /* Header */
+        .admin-header {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 24px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .admin-header img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+        .admin-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .admin-header p { font-size: 13px; color: var(--text-secondary); margin: 2px 0 0; }
+        .header-logout { margin-right: auto; }
+        .btn-logout-admin {
+            padding: 8px 20px;
+            border: 1.5px solid var(--danger);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--danger);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-logout-admin:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(220,38,38,0.3);
+            transform: translateY(-1px);
+        }
+        .btn-logout-admin:active { transform: translateY(0); }
+
+        /* Loading */
+        .loading-spinner { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+
+        /* Dark theme */
+        body.dark-theme .stat-card,
+        body.dark-theme .item-card,
+        body.dark-theme .admin-header { background: var(--bg-card); border-color: var(--border); }
+        body.dark-theme .modal-box { background: var(--bg-card); }
+        body.dark-theme .modal-box input,
+        body.dark-theme .modal-box select { background: rgba(255,255,255,0.05); border-color: var(--border); color: var(--text-primary); }
+        body.dark-theme .admin-tbl { background: var(--bg-card); }
+        body.dark-theme .admin-tbl td { border-color: var(--border); color: var(--text-secondary); }
+        body.dark-theme .admin-tbl tbody tr:hover { background: rgba(255,255,255,0.04); }
+        body.dark-theme { background: #0d1520 !important; background-image: none !important; }
+
+        /* Toast animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to   { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        @media (max-width: 600px) {
+            .tabs-bar { flex-wrap: wrap; }
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .cards-grid { grid-template-columns: 1fr; }
+            .admin-tbl { font-size: 11px; }
+            .admin-tbl th, .admin-tbl td { padding: 8px; }
+        }
+    </style>
+</head>
+<body class="fade-animation">
+
+    <!-- Dark Mode Toggle -->
+    <div style="position:fixed; top:16px; right:16px; z-index:3000;">
+        <button id="theme-toggle" class="btn-outline" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <!-- ===== LOGIN PAGE ===== -->
+    <div id="login-page">
+        <div class="container card-scale">
+            <img src="logo.jpeg" alt="HealthHub" class="logo">
+            <h2>لوحة تحكم الأدمن</h2>
+
+            <div class="input-group">
+                <label>اسم المستخدم</label>
+                <input type="text" id="inp-username" placeholder="أدخل اسم المستخدم" autocomplete="username">
+            </div>
+            <div class="input-group">
+                <label>كلمة السر</label>
+                <input type="password" id="inp-password" placeholder="********" autocomplete="current-password">
+            </div>
+            <p id="login-error" class="error" style="margin-bottom:10px;"></p>
+            <button id="admin-submit-btn" class="btn" onclick="doLogin()">
+                <i class="fas fa-sign-in-alt"></i> دخول
+            </button>
+
+            <div class="redirect-box" style="margin-top:20px;">
+                <p>للعودة لبوابة الأطباء</p>
+                <button class="btn-outline" onclick="window.location.href='index.html'">
+                    <i class="fas fa-arrow-right"></i> الصفحة الرئيسية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div id="dashboard-page">
+
+        <!-- Header -->
+        <div class="admin-header">
+            <img src="logo.jpeg" alt="HealthHub">
+            <div>
+                <h2>لوحة تحكم الأدمن</h2>
+                <p id="admin-name-display">مرحباً، <span id="admin-user-label"></span></p>
+            </div>
+            <div class="header-logout">
+                <button class="btn-logout-admin" onclick="doLogout()">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--primary)"><i class="fas fa-stethoscope"></i></div>
+                <div class="stat-num" id="stat-doctors">—</div>
+                <div class="stat-label">إجمالي الأطباء</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--success)"><i class="fas fa-users"></i></div>
+                <div class="stat-num" id="stat-patients">—</div>
+                <div class="stat-label">إجمالي المرضى</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--warning)"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-num" id="stat-appointments">—</div>
+                <div class="stat-label">إجمالي المواعيد</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:#e67e22"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-num" id="stat-today">—</div>
+                <div class="stat-label">مواعيد اليوم</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-bar">
+            <button class="tab-btn-admin active" id="tab-btn-doctors" onclick="switchTab('doctors')">
+                <i class="fas fa-stethoscope"></i> الأطباء
+            </button>
+            <button class="tab-btn-admin" id="tab-btn-patients" onclick="switchTab('patients')">
+                <i class="fas fa-users"></i> المرضى
+            </button>
+            <button class="tab-btn-admin" id="tab-btn-appointments" onclick="switchTab('appointments')">
+                <i class="fas fa-calendar-alt"></i> المواعيد
+            </button>
+        </div>
+
+        <!-- Doctors Tab -->
+        <div id="tab-doctors">
+            <div id="doctors-grid" class="cards-grid">
+                <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+            </div>
+        </div>
+
+        <!-- Patients Tab -->
+        <div id="tab-patients" style="display:none;">
+            <div id="patients-grid" class="cards-grid">
+                <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+            </div>
+        </div>
+
+        <!-- Appointments Tab -->
+        <div id="tab-appointments" style="display:none;">
+            <div style="overflow-x:auto;">
+                <table class="admin-tbl">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المريض</th>
+                            <th>الطبيب</th>
+                            <th>الموعد</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-body">
+                        <tr><td colspan="6" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT DOCTOR MODAL ===== -->
+    <div class="modal-overlay" id="modal-doctor">
+        <div class="modal-box">
+            <h3><i class="fas fa-user-md"></i> تعديل بيانات الطبيب</h3>
+            <input type="hidden" id="edit-doc-id">
+            <div class="input-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="edit-doc-name" placeholder="اسم الطبيب">
+            </div>
+            <div class="input-group">
+                <label>التخصص</label>
+                <select id="edit-doc-specialty">
+                    <option value="باطنة">باطنة عامة</option>
+                    <option value="نساء وتوليد">نساء وتوليد</option>
+                    <option value="أطفال">طب الأطفال</option>
+                    <option value="جراحة">جراحة عامة</option>
+                    <option value="مخ واعصاب">مخ واعصاب</option>
+                    <option value="اسنان">اسنان</option>
+                    <option value="عيون">عيون</option>
+                    <option value="قلب">قلب وأوعية دموية</option>
+                    <option value="عظام">عظام</option>
+                    <option value="جلدية">جلدية</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>رقم الهاتف</label>
+                <input type="text" id="edit-doc-phone" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>سعر الكشف (جنيه)</label>
+                <input type="number" id="edit-doc-price" placeholder="مثال: 300">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel-modal" onclick="closeModal('modal-doctor')">إلغاء</button>
+                <button class="btn-save-modal" onclick="saveDoctor()"><i class="fas fa-save"></i> حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT PATIENT MODAL ===== -->
+    <div class="modal-overlay" id="modal-patient">
+        <div class="modal-box">
+            <h3><i class="fas fa-user"></i> تعديل بيانات المريض</h3>
+            <input type="hidden" id="edit-pat-id">
+            <div class="input-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="edit-pat-name" placeholder="اسم المريض">
+            </div>
+            <div class="input-group">
+                <label>رقم الهاتف</label>
+                <input type="text" id="edit-pat-phone" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>العمر</label>
+                <input type="number" id="edit-pat-age" placeholder="العمر بالسنوات" min="1" max="120">
+            </div>
+            <div class="input-group">
+                <label>فصيلة الدم</label>
+                <select id="edit-pat-blood">
+                    <option value="">غير محدد</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>الأمراض المزمنة</label>
+                <textarea id="edit-pat-diseases" rows="2" placeholder="مثال: ضغط، سكر..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel-modal" onclick="closeModal('modal-patient')">إلغاء</button>
+                <button class="btn-save-modal" onclick="savePatient()"><i class="fas fa-save"></i> حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scriptadmin.js"></script>
+</body>
+</html>
