@@ -214,7 +214,7 @@ async function updateDoctorPrice() {
     }
 
     try {
-        const response = await fetch('http://127.0.0.1:3000/doctor/update-price', {
+        const response = await fetch('https://healthhub-production-90ef.up.railway.app/doctor/update-price', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
