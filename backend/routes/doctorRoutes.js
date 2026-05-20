@@ -82,5 +82,5 @@ router.post('/booking-status', async (req, res) => {
     res.json({ success: true, ...bookingSettings });
 });
 
-module.exports = router;
 module.exports.bookingSettings = bookingSettings;
+module.exports = router;
